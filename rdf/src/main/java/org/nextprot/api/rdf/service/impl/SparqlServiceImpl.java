@@ -45,7 +45,7 @@ public class SparqlServiceImpl implements SparqlService {
 
 		ResponseEntity<String> responseEntity = null;
 
-		String url = this.sparqlEndpointUrl + ((sparqlParams.getSparql() != null) ? ("?" + sparqlParams.getSparql()) : "");
+		String url = this.sparqlEndpointUrl + ((httpRequestQuery != null) ? ("?" + httpRequestQuery) : "");
 
 		RestTemplate template = new RestTemplate();
 		try {

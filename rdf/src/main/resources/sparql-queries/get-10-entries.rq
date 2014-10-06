@@ -1,0 +1,3 @@
+select distinct ?entry
+where {?entry a :Entry} 
+LIMIT 10

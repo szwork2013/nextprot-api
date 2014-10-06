@@ -1,13 +1,17 @@
 package org.nextprot.api.rdf.sparql;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nextprot.api.rdf.domain.SparqlParameters;
-import org.nextprot.api.rdf.service.SparqlEndpoint;
 import org.nextprot.api.rdf.service.SparqlService;
+import org.nextprot.api.rdf.utils.SparqlDictionary;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -17,48 +21,36 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration("classpath:spring/rdf-context.xml")
 public class SparqlServiceTest {
 
-	String sSuperLite = "?entry :isoform/:expression/:in ?s." + "?s :subPartOf term:TS-1030;rdfs:label ?name.";
-
-	String sLite = "SELECT  ?entry { " + "?entry :isoform/:expression/:in ?s." + "?s :childOf term:TS-1030;rdfs:label ?name. } order by ?entry LIMIT 5";
-
-	String s = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>" + "PREFIX : <http://nextprot.org/rdf#>" + "PREFIX term: <http://nextprot.org/rdf/terminology/>" + "SELECT  ?entry { "
-			+ "?entry :isoform/:expression/:in ?s." + "?s rdfs:subClassOf term:TS-1030;rdfs:label ?name. } order by ?entry LIMIT 5";
-
-	String c = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>" + "PREFIX : <http://nextprot.org/rdf#>" + "PREFIX term: <http://nextprot.org/rdf/terminology/>"
-			+ "SELECT (count(distinct ?entry) as ?c) { " + "?entry :isoform/:expression/:in ?s." + "?s rdfs:subClassOf term:TS-1030;rdfs:label ?name. } order by ?entry LIMIT 5";
+	@Autowired
+	private SparqlDictionary sparqlDictionary;
 
 	@Autowired
 	private SparqlService sparqlService;
 
-	@Autowired
-	private SparqlEndpoint sparqlEndpoint;
+	@Test
+	public void testSparqlService() {
+
+		SparqlParameters sparqlParams = new SparqlParameters();
+		sparqlParams.setSparql(sparqlDictionary.getSparqlOnly("abc-test-query"));
+		sparqlParams.setQueryTitle("title1");
+
+		String httpRequest = sparqlParams.getEquivalentHttpQueryRequest();
+		System.out.println(httpRequest);
+		//"query=select+%3Fa+%3Fb+%3Fc+%0D%0Awhere+%7B%3Fa+%3Fb+%3Fc%7D+%0D%0ALIMIT+10"
+		ResponseEntity<String> entity = sparqlService.sparqlProxy("", sparqlParams.getEquivalentHttpQueryRequest(), sparqlParams);
+		System.out.println(entity.getBody());
+		
+	}
 
 	@Test
 	public void testEntries() {
 
 		SparqlParameters sparqlParams = new SparqlParameters();
-		sparqlParams.setSparql(sLite);
-		sparqlParams.setQueryTitle("title1");
+		sparqlParams.setSparql(sparqlDictionary.getSparqlWithPrefixes("get-10-entries"));
 
 		List<String> entries = sparqlService.findEntries(sparqlParams);
-		for (String s : entries) {
-			System.out.println(s);
-		}
+		assertTrue(entries.size() == 10);
 
-	}
-
-	@Test
-	public void testNoCacheEntries() {
-
-		SparqlParameters sparqlParams = new SparqlParameters();
-		sparqlParams.setSparql(sLite);
-		sparqlParams.setQueryTitle("titleNoCache");
-		sparqlParams.setTestId("testId" + System.currentTimeMillis());
-
-		List<String> entries = sparqlService.findEntriesNoCache(sparqlParams);
-		for (String s : entries) {
-			System.out.println(s);
-		}
 	}
 
 }
