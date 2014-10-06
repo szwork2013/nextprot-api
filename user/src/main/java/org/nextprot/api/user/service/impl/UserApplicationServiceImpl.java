@@ -17,7 +17,7 @@ import sib.calipho.spring.security.auth0.Auth0TokenHelper;
 @Service
 public class UserApplicationServiceImpl implements UserApplicationService {
 
-	@Autowired
+	@Autowired(required = false)
 	private Auth0TokenHelper<Object> tokenHelper;
 
 	@Autowired

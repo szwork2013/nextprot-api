@@ -132,4 +132,10 @@
 		statistics="true">
 	</cache>
 
+	<cache name="sparql-proxy" overflowToOffHeap="false"
+		overflowToDisk="true" diskPersistent="true" maxEntriesLocalHeap="10"
+		maxEntriesLocalDisk="100000" eternal="true" memoryStoreEvictionPolicy="LRU"
+		statistics="true">
+	</cache>
+
 </ehcache>

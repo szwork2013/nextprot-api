@@ -11,6 +11,7 @@ import org.jsondoc.core.annotation.ApiParam;
 import org.jsondoc.core.pojo.ApiVerb;
 import org.nextprot.api.commons.exception.SearchQueryException;
 import org.nextprot.api.commons.utils.StringUtils;
+import org.nextprot.api.rdf.domain.SparqlParameters;
 import org.nextprot.api.rdf.service.SparqlEndpoint;
 import org.nextprot.api.rdf.service.SparqlService;
 import org.nextprot.api.solr.Query;
@@ -41,7 +42,6 @@ public class SearchController {
 	private final Log Logger = LogFactory.getLog(SearchController.class);
 	@Autowired private SolrService queryService;
 	@Autowired private SparqlService sparqlService;
-	@Autowired private SparqlEndpoint sparqlEndpoint;
 
 	@Autowired private UserListService proteinListService;
 	@Autowired private SolrConfiguration configuration;
@@ -84,7 +84,11 @@ public class SearchController {
 			}
 			else if(queryRequest.hasSparql()) {
 				
-				Set<String> accessions = new HashSet<String>(sparqlService.findEntries(queryRequest.getSparql(), sparqlEndpoint.getUrl(), queryRequest.getSparqlTitle()));
+				SparqlParameters sparqlParams = new SparqlParameters();
+				sparqlParams.setSparql(queryRequest.getSparql());
+				sparqlParams.setQueryTitle(queryRequest.getSparqlTitle());
+				
+				Set<String> accessions = new HashSet<String>(sparqlService.findEntries(sparqlParams));
 				
 				//In case there is no result
 				if(accessions.isEmpty()){
@@ -162,8 +166,12 @@ public class SearchController {
 				Query query = null;
 				
 				if((queryRequest.getMode() != null) && queryRequest.getMode().equalsIgnoreCase("advanced")){
-					
-					Set<String> accessions = new HashSet<String>(sparqlService.findEntries(queryRequest.getSparql(), sparqlEndpoint.getUrl(), queryRequest.getSparqlTitle()));
+
+					SparqlParameters sparqlParams = new SparqlParameters();
+					sparqlParams.setSparql(queryRequest.getSparql());
+					sparqlParams.setQueryTitle(queryRequest.getSparqlTitle());
+
+					Set<String> accessions = new HashSet<String>(sparqlService.findEntries(sparqlParams));
 					String queryString = "id:" + (accessions.size() > 1 ? "(" + Joiner.on(" ").join(accessions) + ")" : accessions.iterator().next());
 					queryRequest.setQuery(queryString);
 					query = this.queryService.buildQuery(indexName, "pl_search", queryRequest);

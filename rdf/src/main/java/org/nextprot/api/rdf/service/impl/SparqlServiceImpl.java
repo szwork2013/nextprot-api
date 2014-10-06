@@ -1,17 +1,22 @@
 package org.nextprot.api.rdf.service.impl;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.nextprot.api.commons.exception.NextProtException;
-import org.nextprot.api.commons.utils.SparqlResult;
-import org.nextprot.api.commons.utils.SparqlUtils;
+import org.nextprot.api.rdf.domain.SparqlParameters;
 import org.nextprot.api.rdf.service.SparqlService;
-import org.nextprot.api.rdf.utils.SparqlDictionary;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -20,28 +25,55 @@ import com.hp.hpl.jena.query.QueryParseException;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.engine.binding.Binding;
-import com.hp.hpl.jena.sparql.resultset.ResultsFormat;
 
 @Service
-public class SparqlServiceImpl implements SparqlService, InitializingBean {
+public class SparqlServiceImpl implements SparqlService {
 
 	private static final String ENTRY_SUFFIX_URI = "http://nextprot.org/rdf/entry/";
-	private String prefix = null;
-	
-	@Autowired private SparqlDictionary sparqlDictionary = null;
 
+	private String timeout;
+	private String sparqlEndpointUrl;
+
+	@Override
+	@Cacheable("sparql-proxy")
+	public ResponseEntity<String> sparqlProxy(String body, String httpRequestQuery, SparqlParameters sparqlParams) {
+		return sparqlProxyNoCache(body, httpRequestQuery, sparqlParams);
+	}
+
+	@Override
+	public ResponseEntity<String> sparqlProxyNoCache(String body, String httpRequestQuery, SparqlParameters sparqlParams) {
+
+		ResponseEntity<String> responseEntity = null;
+
+		String url = this.sparqlEndpointUrl + ((sparqlParams.getSparql() != null) ? ("?" + sparqlParams.getSparql()) : "");
+
+		RestTemplate template = new RestTemplate();
+		try {
+
+			responseEntity = template.exchange(new URI(url), HttpMethod.GET, new HttpEntity<String>(body), String.class);
+			return responseEntity;
+
+		} catch (RestClientException e) {
+			throw new NextProtException(e);
+		} catch (URISyntaxException e) {
+			throw new NextProtException(e);
+		}
+	}
 
 	@Override
 	@Cacheable("sparql")
-	public List<String> findEntries(String sparql, String sparqlEndpointUrl, String sparqlTitle) {
+	public List<String> findEntries(SparqlParameters sparqlParams) {
+		return findEntriesNoCache(sparqlParams);
+	}
 
-		String query = buildQuery(sparql);
+	@Override
+	public List<String> findEntriesNoCache(SparqlParameters sparqlParams) {
 
 		List<String> results = new ArrayList<String>();
 		QueryExecution qExec = null;
 
 		try {
-			qExec = QueryExecutionFactory.sparqlService(sparqlEndpointUrl, query);
+			qExec = QueryExecutionFactory.sparqlService(sparqlEndpointUrl, sparqlParams.getSparql());
 		} catch (QueryParseException qe) {
 			throw new NextProtException("Malformed SPARQL: " + qe.getLocalizedMessage());
 		}
@@ -49,10 +81,8 @@ public class SparqlServiceImpl implements SparqlService, InitializingBean {
 		ResultSet rs = qExec.execSelect();
 
 		/**
-		 * This give an empty graph....
-		 * Model m = rs.getResourceModel();
-		 * Graph g = m.getGraph();
-		 * System.err.println("The graph is" + g);
+		 * This give an empty graph.... Model m = rs.getResourceModel(); Graph g
+		 * = m.getGraph(); System.err.println("The graph is" + g);
 		 */
 
 		Var x = Var.alloc("entry");
@@ -75,74 +105,22 @@ public class SparqlServiceImpl implements SparqlService, InitializingBean {
 
 	}
 
-	private String buildQuery(String query) {
-
-		// If it does not start with prefix
-		if (!query.trim().toUpperCase().startsWith("PREFIX")) {
-			String resultQuery = "";
-			resultQuery += prefix;
-
-			// and if does not start with select
-			boolean selectIncluded = false;
-			if (!query.trim().toUpperCase().startsWith("SELECT")) {
-				resultQuery += "SELECT distinct ?entry {\n";
-				selectIncluded = true;
-			}
-
-			resultQuery += query;
-			if (selectIncluded)
-				resultQuery += "\n}";
-
-			return resultQuery;
-
-		} else {
-
-			String resultQuery = "";
-			resultQuery += prefix;
-			resultQuery += query;
-			return resultQuery;
-
-		}
-
+	@Value("${sparql.timeout}")
+	public void setTimeout(String timeout) {
+		this.timeout = timeout;
 	}
 
-	// private static String removeComments (String query){
-	// TODO make a better regex not to include things like
-	// PREFIX : <http://nextprot.org/rdf#> --> PREFIX : <http://nextprot.org/rdf
-	// return query;
-
-	// return query.replaceAll("#.*(?=\\n)", "");
-	// }
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		prefix = sparqlDictionary.getSparqlPrefixes();
+	public String getTimeout() {
+		return timeout;
 	}
 
-	@Override
-	public List<String> findEntriesNoCache(String queryString, String sparqlEndpoint, String queryTitle, String titleId) {
-		// Should not take the cache because does not go through the proxy
-		return this.findEntries(queryString, sparqlEndpoint, queryTitle);
+	public String getUrl() {
+		return sparqlEndpointUrl;
 	}
 
-	@Override
-	public SparqlResult sparqlSelect(String sparql, String sparqlEndpointUrl, int timeout, String queryTitle, String testId, ResultsFormat format) {
-
-		SparqlResult result = null;
-		try {
-			
-			QueryExecution qExec = QueryExecutionFactory.sparqlService(sparqlEndpointUrl, sparql);
-			qExec.setTimeout(timeout);
-			ResultSet rs = qExec.execSelect();
-			result = SparqlUtils.convertResultToFormat(rs, format);
-			qExec.close();
-
-		} catch (QueryParseException qe) {
-			throw new NextProtException("Malformed SPARQL: " + qe.getLocalizedMessage());
-		}
-
-		return result;
-
+	@Value("${sparql.url}")
+	public void setUrl(String url) {
+		this.sparqlEndpointUrl = url;
 	}
 
 }

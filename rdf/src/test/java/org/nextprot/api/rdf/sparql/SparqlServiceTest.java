@@ -2,18 +2,19 @@ package org.nextprot.api.rdf.sparql;
 
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.nextprot.api.rdf.domain.SparqlParameters;
 import org.nextprot.api.rdf.service.SparqlEndpoint;
 import org.nextprot.api.rdf.service.SparqlService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+@ActiveProfiles("unit")
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:app-context.xml" })
-@Ignore
+@ContextConfiguration("classpath:spring/rdf-context.xml")
 public class SparqlServiceTest {
 
 	String sSuperLite = "?entry :isoform/:expression/:in ?s." + "?s :subPartOf term:TS-1030;rdfs:label ?name.";
@@ -34,18 +35,27 @@ public class SparqlServiceTest {
 
 	@Test
 	public void testEntries() {
-		// List<String> entries = advanceQueryService.findEntries(SparqlEndpoint.Virtuoso, sLite, "title1");
-		List<String> entries = sparqlService.findEntries(sLite, sparqlEndpoint.getUrl(), "title1");
+
+		SparqlParameters sparqlParams = new SparqlParameters();
+		sparqlParams.setSparql(sLite);
+		sparqlParams.setQueryTitle("title1");
+
+		List<String> entries = sparqlService.findEntries(sparqlParams);
 		for (String s : entries) {
 			System.out.println(s);
 		}
+
 	}
 
 	@Test
 	public void testNoCacheEntries() {
-		System.out.println("Going to " + sparqlEndpoint.getUrl());
-		// List<String> entries = advanceQueryService.findEntries(SparqlEndpoint.Virtuoso, sLite, "title1");
-		List<String> entries = sparqlService.findEntriesNoCache(sLite, sparqlEndpoint.getUrl(), "titleNoCache", "testId" + System.currentTimeMillis());
+
+		SparqlParameters sparqlParams = new SparqlParameters();
+		sparqlParams.setSparql(sLite);
+		sparqlParams.setQueryTitle("titleNoCache");
+		sparqlParams.setTestId("testId" + System.currentTimeMillis());
+
+		List<String> entries = sparqlService.findEntriesNoCache(sparqlParams);
 		for (String s : entries) {
 			System.out.println(s);
 		}

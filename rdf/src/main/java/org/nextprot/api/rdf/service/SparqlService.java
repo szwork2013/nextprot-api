@@ -2,38 +2,18 @@ package org.nextprot.api.rdf.service;
 
 import java.util.List;
 
-import org.nextprot.api.commons.utils.SparqlResult;
+import org.nextprot.api.rdf.domain.SparqlParameters;
 import org.springframework.beans.factory.annotation.Value;
-
-import com.hp.hpl.jena.sparql.resultset.ResultsFormat;
+import org.springframework.http.ResponseEntity;
 
 public interface SparqlService {
 
-	/**
-	 * Execute a SPARQL search query
-	 * 
-	 * @param query
-	 */
-	List<String> findEntries(String sparql, String sparqlEndpointUrl, String queryTitle);
+	ResponseEntity<String> sparqlProxy(@Value("body") String body, String httpRequestQuery, SparqlParameters sparqlQuery);
 
-	/**
-	 * Executes a SPARQL query without any cache
-	 * 
-	 * @param queryString
-	 * @param sparqlEndpoint
-	 * @param queryTitle
-	 * @return
-	 */
-	List<String> findEntriesNoCache(@Value("sparql") String queryString, @Value("sparqlEndpoint") String sparqlEndpoint, @Value("sparqlTitle") String queryTitle, @Value("testId") String testId);
+	ResponseEntity<String> sparqlProxyNoCache(@Value("body") String body, String httpRequestQuery, SparqlParameters sparqlQuery);
 
-	/**
-	 * Proxy
-	 * 
-	 * @param sparql
-	 * @param sparqlEndpointUrl
-	 * @param queryTitle
-	 * @return
-	 */
-	public SparqlResult sparqlSelect(@Value("sparql") String sparql, @Value("sparqlEndpoint") String sparqlEndpointUrl, @Value("timeout") int timeout, @Value("sparqlTitle") String queryTitle, @Value("testId") String testId,  ResultsFormat format);
+	List<String> findEntries(SparqlParameters sparqlParams);
+
+	List<String> findEntriesNoCache(SparqlParameters sparqlParams);
 
 }
