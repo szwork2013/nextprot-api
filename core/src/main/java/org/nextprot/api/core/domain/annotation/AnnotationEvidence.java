@@ -65,9 +65,6 @@ public class AnnotationEvidence implements Serializable {
 	private long evidenceId;
 
 	private String assignedBy;
-
-	private String assignmentMethod;
-
 	
 	public Long getExperimentalContextId() {
 		return experimentalContextId;
@@ -391,12 +388,6 @@ public class AnnotationEvidence implements Serializable {
 		return expressionLevelInfo.get(extractProperty("integrationLevel"));
 	}
 
-	public String getAssignmentMethod() {
-		return assignmentMethod;
-	}
 
-	public void setAssignmentMethod(String assignmentMethod) {
-		this.assignmentMethod = assignmentMethod;
-	}
 
 }

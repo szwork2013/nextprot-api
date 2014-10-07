@@ -63,7 +63,7 @@
 					<!-- <jettyXml>src/etc/jetty-jmx.xml</jettyXml> -->
 					<!-- <scanIntervalSeconds>10</scanIntervalSeconds> -->
 					<webAppConfig>
-						<contextPath>/${project.name}</contextPath>
+						<contextPath>/nextprot-api</contextPath>
 					</webAppConfig>
 					<stopKey>foo</stopKey>
 					<stopPort>9999</stopPort>

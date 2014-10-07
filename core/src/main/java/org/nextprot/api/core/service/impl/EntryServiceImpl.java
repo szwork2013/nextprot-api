@@ -50,6 +50,7 @@ public class EntryServiceImpl implements EntryService {
 		Long masterId = this.masterIdentifierService.findIdByUniqueName(entryName);
 		entry.setOverview(this.overviewService.findOverviewByEntry(entryName));
 		entry.setEnzymes(enzymeDao.findEnzymeByMaster(entryName));
+		entry.setAssignmentPublications(this.publicationService.findPublicationsWithAssignmentByMasterUniqueName(entryName));
 		entry.setPublications(this.publicationService.findPublicationsByMasterUniqueName(entryName));
 		entry.setXrefs(this.xrefService.findDbXrefsByMaster(entryName));
 		entry.setKeywords(this.kwService.findKeywordByMaster(entryName));

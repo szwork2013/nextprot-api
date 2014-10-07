@@ -1,5 +1,6 @@
 package org.nextprot.api.core.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -14,8 +15,10 @@ public class Entry {
 
 	private Overview overview;
 
-	private List<Publication> publications;
-
+	private List<Publication> publications, 
+							  additionalPublications, 
+							  curatedPublications;
+	
 	private List<DbXref> xrefs;
 
 	private List<Keyword> keywords;
@@ -66,6 +69,27 @@ public class Entry {
 		return publications;
 	}
 
+	public void setAssignmentPublications(List<Publication> publications){
+		curatedPublications=new ArrayList<Publication>();
+		additionalPublications=new ArrayList<Publication>();
+		for(Publication p:publications){
+			if(p.getAssignmentMethodByCurrentEntry().equalsIgnoreCase("curated")){
+				curatedPublications.add(p);
+			}else{
+				additionalPublications.add(p);
+			}
+		}
+		
+	}
+	
+	public List<Publication> getCuratedPublications() {
+		return curatedPublications;
+	}
+
+	public List<Publication> getAdditionalPublications() {
+		return additionalPublications;
+	}
+	
 	public void setPublications(List<Publication> publications) {
 		this.publications = publications;
 	}

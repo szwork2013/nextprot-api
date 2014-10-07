@@ -24,12 +24,14 @@
 :ProteinSequence
       rdf:type owl:Class ;
       rdfs:comment "Protein sequence object"^^xsd:string ;
+      rdfs:domain :Isoform;
       rdfs:subClassOf owl:Thing ;
       .
 
 :History
       rdf:type owl:Class ;
       rdfs:comment "A history of a protein entry"^^xsd:string ;
+      rdfs:domain :Entry;
       rdfs:subClassOf owl:Thing ;
       .
 

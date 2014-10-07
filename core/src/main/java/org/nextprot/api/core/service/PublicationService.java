@@ -37,6 +37,13 @@ public interface PublicationService {
 	public List<Publication> findPublicationsByMasterUniqueName(@ValidEntry String uniqueName);
 
 	/**
+	 * Retrieves publications and their assignment by master's unique name
+	 * @param uniqueName
+	 * @return
+	 */
+	public List<Publication> findPublicationsWithAssignmentByMasterUniqueName(@ValidEntry String entryName);	
+	
+	/**
 	 * Retrieves publication by MD5
 	 * @param uniqueName
 	 * @return
@@ -50,4 +57,5 @@ public interface PublicationService {
 	 * @return
 	 */	
 	public List<Long> findAllPublicationIds();
+
 }

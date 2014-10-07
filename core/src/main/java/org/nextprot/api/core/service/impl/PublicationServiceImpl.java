@@ -55,27 +55,24 @@ public class PublicationServiceImpl implements PublicationService {
 	}
 	
 	
-	/**
-	 * TO REMOVE
-	 */
 	@Override
 	public List<Publication> findPublicationsByMasterId(Long masterId) {
 		
 		List<Publication> publications = this.publicationDao.findSortedPublicationsByMasterId(masterId);
-		
-		for(Publication publication : publications) {
-			loadAuthorsXrefAndCvJournal(publication);			
-		}
-		
-		return publications;
+				
+		return mapsAuthorsXrefAndCvJournal(publications);
 	}
 
-	@Override
-	@Cacheable("publications")
-	public List<Publication> findPublicationsByMasterUniqueName(String uniqueName) {
-		Long masterId = this.masterIdentifierDao.findIdByUniqueName(uniqueName);
-		List<Publication> publications = this.publicationDao.findSortedPublicationsByMasterId(masterId);
-		
+	/**
+	 * maps a list of Publications with their authors, Xrefs and CvJournal
+	 * @param publications
+	 * @return
+	 */
+	private List<Publication> mapsAuthorsXrefAndCvJournal(List<Publication> publications){
+		if(publications.size()==0){
+			return publications;
+		}
+	
 		List<Long> publicationIds = Lists.transform(publications, new Function<Publication, Long>() {
 			public Long apply(Publication publication) {
 				return publication.getPublicationId();
@@ -119,6 +116,24 @@ public class PublicationServiceImpl implements PublicationService {
 		
 		return publications;
 	}
+	
+	@Override
+	@Cacheable("publications")
+	public List<Publication> findPublicationsByMasterUniqueName(String uniqueName) {
+		Long masterId = this.masterIdentifierDao.findIdByUniqueName(uniqueName);
+		List<Publication> publications = this.publicationDao.findSortedPublicationsByMasterId(masterId);		
+		return mapsAuthorsXrefAndCvJournal(publications);
+	}
+	
+	@Override
+	@Cacheable("publications-with-assignment")
+	public List<Publication> findPublicationsWithAssignmentByMasterUniqueName(String uniqueName) {
+		Long masterId = this.masterIdentifierDao.findIdByUniqueName(uniqueName);
+		List<Publication> publications = this.publicationDao.findSortedPublicationsWithAssignmentByMasterId(masterId);
+		return mapsAuthorsXrefAndCvJournal(publications);
+	}
+
+	
 	
 	@Autowired
 	public void setPublicationDao(PublicationDao publicationDao) {

@@ -49,15 +49,9 @@ public class Publication implements Serializable{
 
 	@ApiObjectField(description = "Publications related to 15 entries or more")
 	private Boolean isLargeScale;
-
 	
-	public Boolean getIsLargeScale() {
-		return isLargeScale;
-	}
-
-	public void setIsLargeScale(Boolean isLargeScale) {
-		this.isLargeScale = isLargeScale;
-	}
+	// this value is as
+	private String assignmentMethod;
 
 
 	@ApiObjectField(description = "The journal")
@@ -71,7 +65,22 @@ public class Publication implements Serializable{
 	
 	private final SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");  
 	
-
+	/**
+	 * this method is only available when a publication is linked with an Entry
+	 * @param assignmentMethod
+	 */
+	public void setAssignmentMethodByCurrentEntry(String assignmentMethod) {
+		this.assignmentMethod=assignmentMethod;
+	}
+	
+	/**
+	 * return assignment method only when linked with an entry otherwise return Null 
+	 * @return
+	 */
+	public String getAssignmentMethodByCurrentEntry(){
+		return assignmentMethod;
+	}
+	
 	public long getPublicationId() {
 		return id;
 	}
@@ -80,6 +89,15 @@ public class Publication implements Serializable{
 		this.id = id;
 	}
 
+	public Boolean getIsLargeScale() {
+		return isLargeScale;
+	}
+
+	public void setIsLargeScale(Boolean isLargeScale) {
+		this.isLargeScale = isLargeScale;
+	}
+	
+	
 	public String getMD5() {
 		return md5;
 	}
@@ -187,6 +205,10 @@ public class Publication implements Serializable{
 	public void setDbXrefs(Set<DbXref> dbXrefs) {
 		this.dbXrefs = dbXrefs;
 	}
+
+
+
+
 
 
 }

@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.nextprot.api.commons.spring.jdbc.DataSourceServiceLocator;
 import org.nextprot.api.commons.utils.SQLDictionary;
+import org.nextprot.api.commons.utils.SQLUtils;
 import org.nextprot.api.core.dao.PublicationDao;
 import org.nextprot.api.core.domain.Publication;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,14 @@ public class PublicationDaoImpl implements PublicationDao {
 		return new NamedParameterJdbcTemplate(dsLocator.getDataSource()).query(sqlDictionary.getSQLQuery("publication-sorted-for-master"), params, new PublicationRowMapper());
 	}
 
+	@Override
+	public List<Publication> findSortedPublicationsWithAssignmentByMasterId(Long masterId) {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("identifierId", masterId);
+
+		return new NamedParameterJdbcTemplate(dsLocator.getDataSource()).query(sqlDictionary.getSQLQuery("publication-assignment-sorted-for-master"), params, new PublicationRowMapper());
+	}
+
 
 	private static class PublicationRowMapper implements ParameterizedRowMapper<Publication> {
 
@@ -61,6 +70,10 @@ public class PublicationDaoImpl implements PublicationDao {
 			
 			// add publication details
 			publication.setIsLargeScale(resultSet.getLong("is_largescale")>0);
+			
+			// add assignment method when its available
+			if(SQLUtils.hasColumn(resultSet, "assignment_method"))
+				publication.setAssignmentMethodByCurrentEntry(resultSet.getString("assignment_method"));
 
 			String pubType = resultSet.getString("pub_type");
 			if (pubType.equals("ONLINE PUBLICATION")) {
@@ -136,5 +149,6 @@ public class PublicationDaoImpl implements PublicationDao {
 		SqlParameterSource namedParameters = new MapSqlParameterSource();
 		return new NamedParameterJdbcTemplate(dsLocator.getDataSource()).query(sql, namedParameters, new LongRowMapper());	
 	}
+
 
 }

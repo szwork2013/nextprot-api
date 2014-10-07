@@ -27,4 +27,5 @@ select p1.* as id, pubtypes.cv_name as pub_type, rp.property_value as submission
             p1.cv_publication_type_id,  
             j.journal_name asc,  
             p1.volume asc,  
-            p1.first_page asc  		    
+            p1.first_page asc
+            

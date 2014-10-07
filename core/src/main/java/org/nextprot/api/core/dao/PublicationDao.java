@@ -21,6 +21,14 @@ public interface PublicationDao {
 	 * @return
 	 */
 	public List<Publication> findSortedPublicationsByMasterId(Long masterId);
+
+	/**
+	 * Returns publications and their assignment belonging to an entry
+	 * sorted using the 'default algorithm': publication date, type, etc
+	 * @param masterId
+	 * @return
+	 */
+	public List<Publication> findSortedPublicationsWithAssignmentByMasterId(Long masterId);
 	
 	/**
 	 * Finds publication by id
